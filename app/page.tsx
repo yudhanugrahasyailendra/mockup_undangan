@@ -34,7 +34,7 @@ function useCountdown(targetDate: Date) {
 function useScrollReveal() {
   useEffect(() => {
     const targets = document.querySelectorAll<HTMLElement>(
-      "section:not(#cover), .event-card, .couple-card, .gallery-item, .gift-card"
+      "section:not(#cover):not(#hero), #hero .hero-inner, #quran, .event-card, .couple-card, .couple-bismillah, .gallery-item, .gift-card"
     );
 
     const observer = new IntersectionObserver(
@@ -90,6 +90,45 @@ export default function Home() {
   const weddingDate = new Date("2026-07-08T09:00:00+08:00");
   const countdown = useCountdown(weddingDate);
   const { audioRef, isPlaying, toggle, autoPlay } = useMusicPlayer();
+  const [isOpened, setIsOpened] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [coverFading, setCoverFading] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(id);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  };
+
+  // Kunci scroll saat cover masih tampil, buka saat konten dibuka
+  useEffect(() => {
+    if (!isOpened) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpened]);
+
+  const handleOpen = () => {
+    autoPlay();
+    // Step 1: fade out cover
+    setCoverFading(true);
+    setTimeout(() => {
+      // Step 2: show transition overlay
+      setIsAnimating(true);
+      // Step 3: after 3.2s, reveal main content
+      setTimeout(() => {
+        setIsOpened(true);
+        setIsAnimating(false);
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }, 3200);
+    }, 600);
+  };
 
   useScrollReveal();
 
@@ -103,92 +142,182 @@ export default function Home() {
   return (
     <>
       {/* ══════════════════════════════ COVER ══════════════════════════════ */}
-      <section id="cover">
-        {/* Bugis corner ornaments */}
-        <div className="cover-ornament">
-          <svg
-            className="bugis-top"
-            style={{ top: 32, left: "50%", transform: "translateX(-50%)" }}
-            viewBox="0 0 200 60"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M100 2 L120 20 L100 38 L80 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".6" />
-            <path d="M60 2 L80 20 L60 38 L40 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".35" />
-            <path d="M140 2 L160 20 L140 38 L120 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".35" />
-            <line x1="0" y1="20" x2="40" y2="20" stroke="#C9A84C" strokeWidth=".8" opacity=".3" />
-            <line x1="160" y1="20" x2="200" y2="20" stroke="#C9A84C" strokeWidth=".8" opacity=".3" />
-          </svg>
+      {!isOpened && (
+        <section id="cover" style={coverFading ? { animation: "coverFadeOut .6s ease forwards" } : {}}>
+          {/* Bugis corner ornaments */}
+          <div className="cover-ornament">
+            <svg
+              className="bugis-top"
+              style={{ top: 32, left: "50%", transform: "translateX(-50%)" }}
+              viewBox="0 0 200 60"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M100 2 L120 20 L100 38 L80 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".6" />
+              <path d="M60 2 L80 20 L60 38 L40 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".35" />
+              <path d="M140 2 L160 20 L140 38 L120 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".35" />
+              <line x1="0" y1="20" x2="40" y2="20" stroke="#C9A84C" strokeWidth=".8" opacity=".3" />
+              <line x1="160" y1="20" x2="200" y2="20" stroke="#C9A84C" strokeWidth=".8" opacity=".3" />
+            </svg>
 
-          <svg
-            className="bugis-bottom"
-            style={{ bottom: 32, left: "50%", transform: "translateX(-50%) rotate(180deg)" }}
-            viewBox="0 0 200 60"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path d="M100 2 L120 20 L100 38 L80 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".6" />
-            <path d="M60 2 L80 20 L60 38 L40 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".35" />
-            <path d="M140 2 L160 20 L140 38 L120 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".35" />
-            <line x1="0" y1="20" x2="40" y2="20" stroke="#C9A84C" strokeWidth=".8" opacity=".3" />
-            <line x1="160" y1="20" x2="200" y2="20" stroke="#C9A84C" strokeWidth=".8" opacity=".3" />
-          </svg>
+            <svg
+              className="bugis-bottom"
+              style={{ bottom: 32, left: "50%", transform: "translateX(-50%) rotate(180deg)" }}
+              viewBox="0 0 200 60"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M100 2 L120 20 L100 38 L80 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".6" />
+              <path d="M60 2 L80 20 L60 38 L40 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".35" />
+              <path d="M140 2 L160 20 L140 38 L120 20 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".35" />
+              <line x1="0" y1="20" x2="40" y2="20" stroke="#C9A84C" strokeWidth=".8" opacity=".3" />
+              <line x1="160" y1="20" x2="200" y2="20" stroke="#C9A84C" strokeWidth=".8" opacity=".3" />
+            </svg>
 
-          {/* side ornaments */}
-          <svg style={{ position: "absolute", left: 40, top: "50%", transform: "translateY(-50%)", opacity: .2 }} width="40" height="200" viewBox="0 0 40 200">
-            <line x1="20" y1="0" x2="20" y2="200" stroke="#C9A84C" strokeWidth=".8" />
-            <path d="M20 40 L32 60 L20 80 L8 60 Z" stroke="#C9A84C" strokeWidth="1" fill="none" />
-            <path d="M20 100 L32 120 L20 140 L8 120 Z" stroke="#C9A84C" strokeWidth="1" fill="none" />
-          </svg>
-          <svg style={{ position: "absolute", right: 40, top: "50%", transform: "translateY(-50%)", opacity: .2 }} width="40" height="200" viewBox="0 0 40 200">
-            <line x1="20" y1="0" x2="20" y2="200" stroke="#C9A84C" strokeWidth=".8" />
-            <path d="M20 40 L32 60 L20 80 L8 60 Z" stroke="#C9A84C" strokeWidth="1" fill="none" />
-            <path d="M20 100 L32 120 L20 140 L8 120 Z" stroke="#C9A84C" strokeWidth="1" fill="none" />
-          </svg>
-        </div>
-
-        <div className="cover-inner">
-          <p className="cover-label">Undangan Pernikahan</p>
-
-          <svg width="64" height="32" viewBox="0 0 64 32" fill="none" style={{ marginBottom: 20 }}>
-            <path d="M32 2 L44 12 L56 4 L52 16 L62 24 L48 22 L42 30 L32 24 L22 30 L16 22 L2 24 L12 16 L8 4 L20 12 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".7" />
-          </svg>
-
-          <div className="cover-names">
-            Ilyas
-            <span className="ampersand">&amp;</span>
-            Hikmah
+            {/* side ornaments */}
+            <svg style={{ position: "absolute", left: 40, top: "50%", transform: "translateY(-50%)", opacity: .2 }} width="40" height="200" viewBox="0 0 40 200">
+              <line x1="20" y1="0" x2="20" y2="200" stroke="#C9A84C" strokeWidth=".8" />
+              <path d="M20 40 L32 60 L20 80 L8 60 Z" stroke="#C9A84C" strokeWidth="1" fill="none" />
+              <path d="M20 100 L32 120 L20 140 L8 120 Z" stroke="#C9A84C" strokeWidth="1" fill="none" />
+            </svg>
+            <svg style={{ position: "absolute", right: 40, top: "50%", transform: "translateY(-50%)", opacity: .2 }} width="40" height="200" viewBox="0 0 40 200">
+              <line x1="20" y1="0" x2="20" y2="200" stroke="#C9A84C" strokeWidth=".8" />
+              <path d="M20 40 L32 60 L20 80 L8 60 Z" stroke="#C9A84C" strokeWidth="1" fill="none" />
+              <path d="M20 100 L32 120 L20 140 L8 120 Z" stroke="#C9A84C" strokeWidth="1" fill="none" />
+            </svg>
           </div>
 
-          <p className="cover-date">Rabu, 8 Juli 2026</p>
-          <p className="cover-subtitle">Pangkep, Sulawesi Selatan</p>
+          <div className="cover-inner">
+            <p className="cover-label">Undangan Pernikahan</p>
 
-          <a className="scroll-btn" href="#bismillah" onClick={autoPlay}>
-            <span>Buka Undangan</span>
-            <div className="arrow" />
-          </a>
+            <svg width="64" height="32" viewBox="0 0 64 32" fill="none" style={{ marginBottom: 20 }}>
+              <path d="M32 2 L44 12 L56 4 L52 16 L62 24 L48 22 L42 30 L32 24 L22 30 L16 22 L2 24 L12 16 L8 4 L20 12 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".7" />
+            </svg>
+
+            <div className="cover-names">
+              <span className="cover-name-groom">Ilyas</span>
+              <span className="ampersand">&amp;</span>
+              <span className="cover-name-bride">Hikmah</span>
+            </div>
+
+            <p className="cover-date">Rabu, 8 Juli 2026</p>
+
+            <a className="scroll-btn" onClick={handleOpen} style={{ cursor: "pointer" }}>
+              <span>Open Invitation</span>
+            </a>
+          </div>
+        </section>
+      )}
+
+      {/* ══════════════════════════════ TRANSITION OVERLAY ══════════════ */}
+      {isAnimating && (
+        <div className="opening-overlay">
+          <div className="opening-bg" />
+          {/* Ornamen atas */}
+          <svg className="opening-ornament-top" viewBox="0 0 300 80" fill="none">
+            <path d="M150 4 L170 24 L150 44 L130 24 Z" stroke="#C9A84C" strokeWidth="1.2" fill="none" opacity=".8" />
+            <path d="M100 4 L120 24 L100 44 L80 24 Z" stroke="#C9A84C" strokeWidth=".8" fill="none" opacity=".45" />
+            <path d="M200 4 L220 24 L200 44 L180 24 Z" stroke="#C9A84C" strokeWidth=".8" fill="none" opacity=".45" />
+            <path d="M50 4 L70 24 L50 44 L30 24 Z" stroke="#C9A84C" strokeWidth=".6" fill="none" opacity=".2" />
+            <path d="M250 4 L270 24 L250 44 L230 24 Z" stroke="#C9A84C" strokeWidth=".6" fill="none" opacity=".2" />
+            <line x1="0" y1="24" x2="30" y2="24" stroke="#C9A84C" strokeWidth=".6" opacity=".3" />
+            <line x1="270" y1="24" x2="300" y2="24" stroke="#C9A84C" strokeWidth=".6" opacity=".3" />
+          </svg>
+          {/* Konten tengah */}
+          <div className="opening-content">
+            <p className="opening-bismillah">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
+            <div className="opening-divider" />
+            <p className="opening-label">Dengan memohon rahmat Allah SWT</p>
+            <div className="opening-names">
+              <span className="opening-name">Ilyas</span>
+              <span className="opening-amp">&amp;</span>
+              <span className="opening-name">Hikmah</span>
+            </div>
+            <p className="opening-date">Rabu, 8 Juli 2026</p>
+          </div>
+          {/* Ornamen bawah */}
+          <svg className="opening-ornament-bottom" viewBox="0 0 300 80" fill="none">
+            <path d="M150 4 L170 24 L150 44 L130 24 Z" stroke="#C9A84C" strokeWidth="1.2" fill="none" opacity=".8" />
+            <path d="M100 4 L120 24 L100 44 L80 24 Z" stroke="#C9A84C" strokeWidth=".8" fill="none" opacity=".45" />
+            <path d="M200 4 L220 24 L200 44 L180 24 Z" stroke="#C9A84C" strokeWidth=".8" fill="none" opacity=".45" />
+            <path d="M50 4 L70 24 L50 44 L30 24 Z" stroke="#C9A84C" strokeWidth=".6" fill="none" opacity=".2" />
+            <path d="M250 4 L270 24 L250 44 L230 24 Z" stroke="#C9A84C" strokeWidth=".6" fill="none" opacity=".2" />
+            <line x1="0" y1="24" x2="30" y2="24" stroke="#C9A84C" strokeWidth=".6" opacity=".3" />
+            <line x1="270" y1="24" x2="300" y2="24" stroke="#C9A84C" strokeWidth=".6" opacity=".3" />
+          </svg>
+        </div>
+      )}      {/* ══════════════════════════════ HERO PREVIEW ═══════════════════════ */}
+      <section id="hero">
+        <div className="hero-inner">
+          <p className="hero-label">Undangan Pernikahan</p>
+          <div className="hero-photos">
+            <div className="hero-photo-wrap">
+              <Image
+                src="/images/mempelai/Ilyas.jpeg"
+                alt="Muhammad Ilyas"
+                fill
+                style={{ objectFit: "cover", objectPosition: "center 30%" }}
+                sizes="160px"
+              />
+              <span className="hero-photo-name">Ilyas</span>
+            </div>
+            <div className="hero-ampersand">
+              <svg width="1" height="50" viewBox="0 0 1 50">
+                <line x1=".5" y1="0" x2=".5" y2="50" stroke="#C9A84C" strokeWidth="1" strokeDasharray="3 3" />
+              </svg>
+              <span>&amp;</span>
+              <svg width="1" height="50" viewBox="0 0 1 50">
+                <line x1=".5" y1="0" x2=".5" y2="50" stroke="#C9A84C" strokeWidth="1" strokeDasharray="3 3" />
+              </svg>
+            </div>
+            <div className="hero-photo-wrap">
+              <Image
+                src="/images/mempelai/Hikmah.jpeg"
+                alt="Nur Hikmah"
+                fill
+                style={{ objectFit: "cover", objectPosition: "center top" }}
+                sizes="160px"
+              />
+              <span className="hero-photo-name">Hikmah</span>
+            </div>
+          </div>
+          <div className="hero-divider"><div className="diamond" /></div>
+          <p className="hero-fullnames">Muhammad Ilyas &amp; Nur Hikmah</p>
+          <p className="hero-date">Rabu, 8 Juli 2026</p>
+          <p className="hero-place">Pangkep, Sulawesi Selatan</p>
         </div>
       </section>
 
-      {/* ══════════════════════════════ BISMILLAH ══════════════════════════ */}
-      <section id="bismillah">
-        <p className="bismillah-arabic">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
-        <p className="bismillah-text">
-          Dengan memohon rahmat dan ridha Allah Subhanahu wa Ta&apos;ala, kami bermaksud
-          menyelenggarakan pernikahan putra-putri kami.
+      {/* ══════════════════════════════ AYAT QUR'AN ═════════════════════════ */}
+      <section id="quran">
+        <p className="quran-label">Firman Allah SWT</p>
+        <div className="quran-ornament">
+          <svg width="40" height="20" viewBox="0 0 40 20" fill="none">
+            <path d="M20 2 L26 8 L32 4 L30 10 L36 14 L28 13 L26 18 L20 14 L14 18 L12 13 L4 14 L10 10 L8 4 L14 8 Z" stroke="#C9A84C" strokeWidth="1" fill="none" opacity=".6" />
+          </svg>
+        </div>
+        <p className="quran-arabic">وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا</p>
+        <p className="quran-arabic-2">لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً</p>
+        <div className="quran-line" />
+        <p className="quran-translation">
+          &ldquo;Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan
+          untukmu dari jenismu sendiri, agar kamu merasa tenteram kepadanya, dan Dia menjadikan
+          di antaramu rasa kasih dan sayang.&rdquo;
         </p>
-        <p className="quran-verse">
-          &quot;Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan
-          untukmu dari jenismu sendiri...&quot;
-          <br />
-          <span style={{ fontStyle: "normal", letterSpacing: 2, fontSize: 11, opacity: .6 }}>
-            — QS. Ar-Rum: 21
-          </span>
-        </p>
+        <p className="quran-ref">— QS. Ar-Rum: 21 —</p>
       </section>
 
       {/* ══════════════════════════════ MEMPELAI ═══════════════════════════ */}
       <section id="couple">
+        {/* Bismillah + kalimat pembuka */}
+        <div className="couple-bismillah">
+          <p className="couple-bismillah-arabic">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</p>
+          <p className="couple-bismillah-text">
+            Dengan memohon rahmat dan ridha Allah Subhanahu wa Ta&apos;ala,
+            kami bermaksud menyelenggarakan pernikahan putra-putri kami.
+          </p>
+        </div>
+
         <p className="section-label">Mempelai</p>
         <h2 className="section-title">Yang Berbahagia</h2>
         <div className="section-divider"><div className="diamond" /></div>
@@ -208,7 +337,7 @@ export default function Home() {
             </div>
             <div className="couple-nick">Ilyas</div>
             <p className="couple-fullname">Muhammad Ilyas</p>
-            <p className="couple-desc">Putra ke-7 dari 8 bersaudara</p>
+            <p className="couple-desc">Putra ke-7 Alm. Bapak Abd. Latif & Ibu Nurhaedah</p>
             <div className="couple-social">
               <a href="https://www.instagram.com/muhammadkaddi?igsh=Nm5pbGJic2FqM2xw" target="_blank" rel="noopener noreferrer">
                 ✦ Instagram
@@ -240,7 +369,7 @@ export default function Home() {
             </div>
             <div className="couple-nick">Hikmah</div>
             <p className="couple-fullname">Nur Hikmah</p>
-            <p className="couple-desc">Putri ke-7 dari 7 bersaudara</p>
+            <p className="couple-desc">Putri ke-7 dari Bapak Jumaleng dg. Solo & Ibu Kartia Mahaseng</p>
             <div className="couple-social">
               <a href="https://www.instagram.com/_____nrrhkmaa?igsh=MXg3MHc2enRiMjl5MQ==" target="_blank" rel="noopener noreferrer">
                 ✦ Instagram
@@ -408,12 +537,47 @@ export default function Home() {
         <h2 className="section-title">Kirim Doa &amp; Hadiah</h2>
         <div className="section-divider"><div className="diamond" /></div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center" }}>
+          {/* SeaBank - Hikmah */}
           <div className="gift-card">
-            <p className="gift-bank">Rekening / OVO / GoPay</p>
-            <p className="gift-name">a.n. _______________</p>
-            <p className="gift-no">____&nbsp;____&nbsp;____&nbsp;____</p>
-            <p className="gift-note">*Data rekening akan ditambahkan oleh pemilik undangan</p>
+            <div className="gift-bank-logo-wrap">
+              <Image
+                src="/images/logo/seabank.png"
+                alt="Logo SeaBank"
+                width={160}
+                height={100}
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+            <p className="gift-name">a.n. Nur Hikmah</p>
+            <p className="gift-no">9016&nbsp;5015&nbsp;8763</p>
+            <button
+              className="gift-copy-btn"
+              onClick={() => copyToClipboard("901650158763", "hikmah")}
+            >
+              {copied === "hikmah" ? "✓ Tersalin!" : "Salin Nomor"}
+            </button>
+          </div>
+
+          {/* BRI - Ilyas */}
+          <div className="gift-card">
+            <div className="gift-bank-logo-wrap">
+              <Image
+                src="/images/logo/bri.png"
+                alt="Logo BRI"
+                width={120}
+                height={55}
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+            <p className="gift-name">a.n. Muhammad Ilyas</p>
+            <p className="gift-no">5009&nbsp;0103&nbsp;9697&nbsp;538</p>
+            <button
+              className="gift-copy-btn"
+              onClick={() => copyToClipboard("500901039697538", "ilyas")}
+            >
+              {copied === "ilyas" ? "✓ Tersalin!" : "Salin Nomor"}
+            </button>
           </div>
         </div>
 
@@ -431,28 +595,17 @@ export default function Home() {
         <h2 className="section-title">Peta &amp; Alamat</h2>
         <div className="section-divider"><div className="diamond" /></div>
 
-        <div className="maps-placeholder">
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" opacity=".3">
-            <circle cx="24" cy="20" r="10" stroke="#5C1A1A" strokeWidth="2" />
-            <path d="M24 44 L24 30" stroke="#5C1A1A" strokeWidth="2" />
-            <path d="M14 44 L34 44" stroke="#5C1A1A" strokeWidth="2" />
-            <circle cx="24" cy="20" r="4" fill="#5C1A1A" />
-          </svg>
-          <p style={{ fontSize: 12, color: "#999", textAlign: "center" }}>
-            Link Google Maps akan ditambahkan<br />setelah tersedia
-          </p>
+        <div className="maps-btn-wrap">
           <a
-            href="#"
-            style={{
-              padding: "8px 20px",
-              background: "var(--maroon)",
-              color: "white",
-              borderRadius: 4,
-              fontSize: 11,
-              letterSpacing: 1,
-              textDecoration: "none",
-            }}
+            href="https://maps.app.goo.gl/xsKGVpr42abEpdFF9"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="maps-open-btn"
           >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
             Buka di Google Maps
           </a>
         </div>
@@ -488,28 +641,30 @@ export default function Home() {
 
       {/* ══════════════════════════════ MUSIC PLAYER ════════════════════════ */}
       <audio ref={audioRef} src="/music/Dewa 19 - Aku Milikmu.mp3" loop preload="none" />
-      <button
-        id="music-toggle"
-        className={`music-btn${isPlaying ? " playing" : ""}`}
-        onClick={toggle}
-        aria-label={isPlaying ? "Pause musik" : "Play musik"}
-        title={isPlaying ? "Pause musik" : "Play musik"}
-      >
-        {/* Pulsing ring */}
-        <span className="music-ring" />
-        {/* Equalizer bars (visible when playing) */}
-        <span className="music-eq">
-          <span /><span /><span /><span />
-        </span>
-        {/* Play icon (visible when paused) */}
-        <svg className="music-play-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 5v14l11-7z" />
-        </svg>
-        {/* Note icon (visible when playing) */}
-        <svg className="music-note-icon" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
-        </svg>
-      </button>
+      {isOpened && (
+        <button
+          id="music-toggle"
+          className={`music-btn${isPlaying ? " playing" : ""}`}
+          onClick={toggle}
+          aria-label={isPlaying ? "Pause musik" : "Play musik"}
+          title={isPlaying ? "Pause musik" : "Play musik"}
+        >
+          {/* Pulsing ring */}
+          <span className="music-ring" />
+          {/* Equalizer bars (visible when playing) */}
+          <span className="music-eq">
+            <span /><span /><span /><span />
+          </span>
+          {/* Play icon (visible when paused) */}
+          <svg className="music-play-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          {/* Note icon (visible when playing) */}
+          <svg className="music-note-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
+          </svg>
+        </button>
+      )}
     </>
   );
 }
